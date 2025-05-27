@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marado.editor</title>
+    <link rel="icon" href="https://i.imgur.com/x0r8eQI.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos base Globais - ATUALIZADO com Inter como principal */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Helvetica Neue', sans-serif; /* Inter como fonte principal */
+            background-color: #0A0A0A;
+            color: #FFFFFF;
+            overflow-x: hidden; /* Impede a barra de rolagem horizontal */
+        }
+
+        /* Initial state for scroll animations */
+        section:not(.hero), .footer {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        section.hero {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 20px;
+            background: linear-gradient(90deg, #1E9B8A, #2AE6B2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            align-items: center;
+        }
+
+        .section-title img.title-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #E0E0E0;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Estilos da Hero Section */
+        .hero {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(26, 60, 76, 0.9), rgba(10, 10, 10, 0.95));
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.imgur.com/U2K7e8E.png'); 
+            background-size: cover;
+            background-position: center;
+            opacity: 0.7;
+            z-index: -1;
+        }
+        
+        .hero-content {
+            text-align: center;
+            z-index: 2;
+            max-width: 1200px;
+            padding: 0 20px;
+        }
+        
+        .logo-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .logo {
+            width: 180px;
+            height: 180px;
+            margin-bottom: 20px;
+        }
+        
+        /* Estilo para o título principal - ATUALIZADO com Inter */
+        .hero h1 {
+            font-size: 5rem;
+            font-weight: 700;
+            margin: 0;
+            font-family: 'Inter', sans-serif; /* Fonte alterada para Inter */
+            color: #FFFFFF; 
+            text-shadow: none; 
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            background: none;
+            -webkit-background-clip: initial;
+            background-clip: initial;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility; 
+        }
+        
+        /* Estilo para o subtítulo - ATUALIZADO com Inter */
+        .hero h2 { 
+            font-size: 1.5rem;
+            font-weight: 300; /* Inter tem um bom peso 300 */
+            margin: 20px 0 40px;
+            font-family: 'Inter', sans-serif; /* Fonte alterada para Inter */
+            color: #E0E0E0; 
+            text-shadow: none; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: transparent;
+            color: #2AE6B2;
+            border: 2px solid #2AE6B2;
+            font-family: 'Inter', sans-serif; /* Fonte alterada para Inter */
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            background: rgba(42, 230, 178, 0.15);
+            color: #FFFFFF;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(42, 230, 178, 0.2);
+            border-color: #2AE6B2;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
+            }
+            40% {
+                transform: translateY(-20px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+        }
+        
+        /* Hero Responsividade */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+            .hero h2 {
+                font-size: 1.2rem;
+            }
+            .logo {
+                width: 140px;
+                height: 140px;
+            }
+        }
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .hero h2 {
+                font-size: 1rem;
+            }
+            .logo {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* Estilos da Seção Sobre */
+        .sobre {
+            padding: 100px 0; 
+            background-color: #030303; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .sobre::before { 
+            content: ""; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: none; 
+            z-index: 1; 
+        }
+        .sobre-tanspar { display: none; }
+        .sobre .container, 
+        .ferramentas .container, 
+        .contato .container {
+            position: relative; 
+            z-index: 2; 
+        }
+        .sobre-content { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 60px; 
+            align-items: center; 
+        }
+        .sobre-text { padding-right: 20px; }
+        .sobre .section-title { margin-bottom: 30px; }
+        .sobre-text p { 
+            font-size: 1.1rem; 
+            line-height: 1.8; 
+            color: #E0E0E0; 
+            margin-bottom: 20px; 
+        }
+        .sobre-text p:last-child { margin-bottom: 0; }
+        .highlight { color: #2AE6B2; font-weight: 600; }
+        .sobre-image { 
+            position: relative; 
+            overflow: hidden; 
+            background-color: #030303; 
+        }
+        .sobre-image img { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            transition: transform 0.5s ease; 
+        }
+        .sobre-image:hover img { transform: scale(1.03); }
+        .sobre-image::after { display: none; }
+        
+        /* Sobre Responsividade */
+        @media (max-width: 992px) { 
+            .sobre-content { 
+                grid-template-columns: 1fr; 
+                gap: 40px; 
+            }
+            .sobre-text { padding-right: 0; order: 2; }
+            .sobre-image { order: 1; max-width: 600px; margin: 0 auto; }
+        }
+        @media (max-width: 768px) { 
+            .sobre .section-title { font-size: 2rem; }
+            .sobre-text p { font-size: 1rem; }
+        }
+
+        /* Estilos da Seção Ferramentas */
+        .ferramentas {
+            padding: 100px 0;
+            background-color: #0A0A0A;
+            position: relative;
+            overflow: hidden;
+        }
+        .ferramentas::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://i.imgur.com/qrV1imB.jpg'); 
+            background-size: cover; background-position: center;
+            opacity: 0.1; filter: blur(5px); z-index: 1;
+        }
+        .skills-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 50px; }
+        .skills-column { display: flex; flex-direction: column; }
+        .skills-group { margin-bottom: 40px; }
+        .skills-group:last-child { margin-bottom: 0; }
+        .skills-group-title {
+            font-size: 1.5rem; font-weight: 600; margin: 0 0 20px;
+            color: #FFFFFF; display: flex; align-items: center;
+        }
+        .skills-group-title svg { margin-right: 10px; }
+        .skills-list { list-style: none; padding: 0; margin: 0; }
+        .skill-item {
+            margin-bottom: 20px; background-color: rgba(17, 17, 17, 0.7);
+            border-radius: 8px; padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .skill-item:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+        .skill-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px;
+        }
+        .skill-name { font-size: 1.2rem; font-weight: 600; margin: 0; }
+        .skill-level { font-size: 0.9rem; color: #2AE6B2; }
+        .skill-bar {
+            height: 6px; background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px; overflow: hidden;
+        }
+        .skill-progress {
+            height: 100%; background: linear-gradient(90deg, #1E9B8A, #2AE6B2);
+            border-radius: 3px;
+        }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; }
+        .tool-card {
+            background-color: rgba(17, 17, 17, 0.7); border-radius: 8px;
+            padding: 30px; text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column; justify-content: space-between; 
+        }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+        .tool-icon { width: 60px; height: 60px; margin: 0 auto 20px; }
+        .tool-icon img, .tool-icon svg { width: 100%; height: 100%; object-fit: contain; }
+        .tool-name { font-size: 1.2rem; font-weight: 600; margin: 0 0 10px; }
+        .tool-description { font-size: 0.9rem; color: #E0E0E0; margin: 0; flex-grow: 1; }
+        
+        /* Ferramentas Responsividade */
+        @media (max-width: 992px) { .skills-container { grid-template-columns: 1fr; gap: 40px; } }
+        @media (max-width: 768px) { .tools-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+        @media (max-width: 480px) { .tools-grid { grid-template-columns: 1fr; } }
+
+        /* Estilos da Seção Trabalhos */
+        .trabalhos { padding: 100px 0; background-color: #0A0A0A; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
+        .video-item {
+            position: relative; border-radius: 8px; overflow: hidden;
+            background-color: #111111;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column;
+        }
+        .video-item iframe { width: 100%; aspect-ratio: 16/9; border: none; }
+        .video-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); }
+        .video-info-container { padding: 15px; background-color: #111111; }
+        .video-title { font-size: 1.1rem; font-weight: 600; margin: 0 0 10px; color: #FFFFFF; }
+        .video-stats { display: flex; align-items: center; font-size: 0.9rem; color: #E0E0E0; }
+        .video-stats svg { margin-right: 5px; }
+        .load-more {
+            display: block; margin: 50px auto 0; padding: 15px 30px;
+            background: transparent; color: #2AE6B2; text-decoration: none;
+            font-weight: 600; border-radius: 4px; font-size: 1.1rem;
+            transition: all 0.3s ease; border: 2px solid #2AE6B2;
+            cursor: pointer; text-align: center; max-width: 200px;
+        }
+        .load-more:hover { background-color: rgba(42, 230, 178, 0.1); }
+        
+        /* Trabalhos Responsividade */
+        @media (max-width: 768px) { .video-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; } }
+        @media (max-width: 480px) { .video-grid { grid-template-columns: 1fr; } .trabalhos .section-title { font-size: 1.8rem; } }
+
+        /* Estilos da Seção Contato */
+        .contato {
+            padding: 100px 0 50px; 
+            background-color: #0D0D0D; 
+            position: relative;
+            overflow: hidden;
+        }
+        .contato::before {
+            content: ""; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 90% 90%, rgba(30, 155, 138, 0.1), transparent 60%);
+            z-index: 1;
+        }
+        .contato-content {
+            gap: 40px; 
+            align-items: start; 
+            position: relative; 
+            z-index: 2; 
+        }
+        .contato-info {
+            width: 100%; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            text-align: center; 
+        }
+        .contato-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #E0E0E0;
+            margin-bottom: 40px; 
+        }
+        
+        .modern-contact-links {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            padding: 0;
+            list-style: none;
+            max-width: 520px; 
+            margin: 0 auto; 
+        }
+
+        .modern-contact-links .social-link {
+            display: flex; 
+            flex-direction: row; 
+            align-items: center;
+            justify-content: center; 
+            width: 100%; 
+            min-height: 55px; 
+            padding: 10px 15px; 
+            border: 1px solid rgba(42, 230, 178, 0.3); 
+            border-radius: 8px; 
+            background-color: rgba(17, 17, 17, 0.85); 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none; 
+            box-sizing: border-box; 
+        }
+
+        .modern-contact-links .social-link:hover {
+            background-color: rgba(42, 230, 178, 0.15);
+            border-color: #2AE6B2;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(42, 230, 178, 0.25);
+        }
+
+        .modern-contact-links .social-icon {
+            background-color: transparent; 
+            margin-right: 10px; 
+            width: 24px; 
+            height: 24px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modern-contact-links .social-icon svg { 
+            width: 100%;
+            height: 100%;
+        }
+        
+        .modern-contact-links .social-icon img { 
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .modern-contact-links .social-link span {
+            color: #FFFFFF;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #0A0A0A;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .footer-text {
+            font-size: 0.9rem;
+            color: #777777;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .modern-contact-links {
+                grid-template-columns: 1fr; 
+                max-width: 280px; 
+            }
+            .modern-contact-links .social-link span { font-size: 0.9rem; }
+        }
+
+        @media (max-width: 768px) {
+            .section-title { font-size: 2rem; }
+            .trabalhos .section-title, .sobre .section-title, 
+            .ferramentas .section-title, .contato .section-title { font-size: 2rem; }
+            .section-subtitle { font-size: 1rem; }
+        }
+        @media (max-width: 480px) {
+            .trabalhos .section-title { font-size: 1.8rem; }
+            .contato .section-title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="logo-container">
+                </div>
+            <h1>Marado.editor</h1>
+            <h2>Editor de Vídeos & Criador de Conteúdo</h2>
+            <a href="#sobre" class="cta-button">Conheça meu trabalho</a>
+        </div>
+        <div class="scroll-indicator">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5V19M12 19L19 12M12 19L5 12" stroke="#2AE6B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </section>
+
+    <section class="sobre" id="sobre"> 
+        <div class="container"> 
+            <div class="sobre-content"> 
+                <div class="sobre-text"> 
+                    <h2 class="section-title">
+                        <img src="https://i.imgur.com/x0r8eQI.png" alt="Ícone" class="title-icon">Sobre Mim
+                    </h2> 
+                    <p>Minha paixão por edição começou desde criança, sempre estive envolvido com computadores. Passei por diversos desafios e soluções, desde montar e desmontar PCs até programação, mas foi a <span class="highlight">edição de vídeos que realmente me conquistou</span>.</p> 
+                    <p>Minha jornada no YouTube começou em 2013 (hoje meu canal principal é o <span class="highlight">@oqcortes</span>, comecei a postar em dezembro 2024), e em todos esses anos, fui eu mesmo quem editou todos os vídeos, testando praticamente todos os programas de edição famosos da época.</p> 
+                    <p>No início, era só um hobby, mas hoje levo mais a sério: uso <span class="highlight">Adobe Premiere</span> e diariamente estudo técnicas para aumentar a retenção do público.</p> 
+                    <p>Estou sempre atualizado sobre <span class="highlight">I.A Tools</span> que ajudam na produção e qualidade dos vídeos. Seja para melhorar a resolução de um vídeo (upscale), corrigir áudio ruim ou otimizar o fluxo de trabalho, conheço as melhores soluções tecnológicas para garantir um resultado profissional.</p> 
+                </div>
+                <div class="sobre-image"> 
+                    <img src="https://i.imgur.com/FgkcY11.jpg" alt="Ricardo editando vídeo"> 
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="ferramentas" id="ferramentas">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ferramentas & Habilidades</h2>
+                <p class="section-subtitle">Conheça as tecnologias e técnicas que utilizo para criar edições de alta qualidade</p>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon"> <img src="https://i.imgur.com/LluBS9r.png" alt="Adobe Premiere Pro Icon"> </div>
+                    <h3 class="tool-name">Adobe Premiere</h3>
+                    <p class="tool-description">Edição profissional de vídeos com foco em retenção de público</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon"> <img src="https://i.imgur.com/8CImhBp.png" alt="Adobe After Effects Icon"> </div>
+                    <h3 class="tool-name">After Effects</h3>
+                    <p class="tool-description">Efeitos visuais e animações para elevar a qualidade dos vídeos</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon"> <img src="https://i.imgur.com/E2WSn0b.png" alt="Adobe Photoshop Icon"> </div>
+                    <h3 class="tool-name">Photoshop</h3>
+                    <p class="tool-description">Criação e edição de miniaturas e elementos gráficos</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon"> <img src="https://i.imgur.com/0pozajj.png" alt="I.A Tools Icon"> </div>
+                    <h3 class="tool-name">I.A Tools</h3>
+                    <p class="tool-description">Slow motion, upscaling de resolução e FPS, estabilização (rolling shutter e jittery motion) e motion deblur.</p>
+                </div>
+            </div>
+            <div class="skills-container">
+                <div class="skills-column">
+                    <div class="skills-group">
+                        <h3 class="skills-group-title">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 5L21 12M21 12L14 19M21 12H3" stroke="#2AE6B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Edição de Vídeo
+                        </h3>
+                        <ul class="skills-list">
+                            <li class="skill-item">
+                                <div class="skill-header"> <h4 class="skill-name">Efeitos Visuais</h4> <span class="skill-level">Intermediário</span> </div>
+                                <div class="skill-bar"> <div class="skill-progress" style="width: 80%;"></div> </div>
+                            </li>
+                            <li class="skill-item">
+                                <div class="skill-header"> <h4 class="skill-name">Tratamento de Áudio</h4> <span class="skill-level">Intermediário</span> </div>
+                                <div class="skill-bar"> <div class="skill-progress" style="width: 75%;"></div> </div>
+                            </li>
+                            <li class="skill-item">
+                                <div class="skill-header"> <h4 class="skill-name">Motion Graphics</h4> <span class="skill-level">Intermediário</span> </div>
+                                <div class="skill-bar"> <div class="skill-progress" style="width: 85%;"></div> </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="skills-column">
+                    <div class="skills-group">
+                        <h3 class="skills-group-title">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 12H5M5 12C6.10457 12 7 11.1046 7 10C7 8.89543 6.10457 8 5 8V12ZM5 12C6.10457 12 7 12.8954 7 14C7 15.1046 6.10457 16 5 16V12Z" stroke="#2AE6B2" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M14 16V8L19 16V8" stroke="#2AE6B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10 8V16" stroke="#2AE6B2" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M10 12H11" stroke="#2AE6B2" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Estratégia de Conteúdo
+                        </h3>
+                        <ul class="skills-list">
+                            <li class="skill-item">
+                                <div class="skill-header"> <h4 class="skill-name">Storytelling</h4> <span class="skill-level">Intermediário</span> </div>
+                                <div class="skill-bar"> <div class="skill-progress" style="width: 78%;"></div> </div>
+                            </li>
+                            <li class="skill-item">
+                                <div class="skill-header"> <h4 class="skill-name">Retenção de Engajamento</h4> <span class="skill-level">Avançado</span> </div>
+                                <div class="skill-bar"> <div class="skill-progress" style="width: 25%;"></div> </div>
+                            </li>
+                            <li class="skill-item">
+                                <div class="skill-header"> <h4 class="skill-name">Palavras-Chave</h4> <span class="skill-level">Avançado</span> </div>
+                                <div class="skill-bar"> <div class="skill-progress" style="width: 15%;"></div> </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="trabalhos" id="trabalhos">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Meus Vídeos</h2>
+                <p class="section-subtitle">Confira alguns dos meus trabalhos no canal @oqcortes</p>
+            </div>
+            <div class="video-grid">
+                <div class="video-item">
+                    <iframe width="542" height="305" src="https://www.youtube.com/embed/Rg9keZAY29M" title="Chinês odeia ser confundido com Japonês!" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    <div class="video-info-container">
+                        <h3 class="video-title">Chinês odeia ser confundido com Japonês!</h3>
+                        <div class="video-stats">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                            +4,8 mi visualizações 
+                        </div>
+                    </div>
+                </div>
+                <div class="video-item">
+                    <iframe width="542" height="305" src="https://www.youtube.com/embed/FnUPOLNYt84" title="os AMERICANOS são DONOS do MUNDO!?" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    <div class="video-info-container">
+                        <h3 class="video-title">os AMERICANOS são DONOS do MUNDO!?</h3>
+                        <div class="video-stats">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                            +800 mil visualizações
+                        </div>
+                    </div>
+                </div>
+                <div class="video-item">
+                    <iframe width="542" height="305" src="https://www.youtube.com/embed/ozsa_aNyPQY" title="A cervejinha do Baptista tá diferenciada!" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    <div class="video-info-container">
+                        <h3 class="video-title">A cervejinha do Baptista tá diferenciada!</h3>
+                        <div class="video-stats">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                            +700 mil visualizações
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="https://www.youtube.com/@oqcortes/shorts" target="_blank" class="load-more">Ver mais</a>
+        </div>
+    </section>
+
+    <section class="contato" id="contato">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Contato</h2>
+                <p class="section-subtitle">Disponível para novos projetos e colaborações.</p>
+            </div>
+            <div class="contato-content">
+                <div class="contato-info">
+                    <p class="contato-text">Se você gostou do meu trabalho e tem um projeto em mente, ou gostaria de discutir uma colaboração, por favor, utilize uma das formas de contato abaixo:</p>
+
+                    <ul class="social-links modern-contact-links">
+                        <li class="social-item">
+                            <a href="#" class="social-link discord-link">
+                                <div class="social-icon">
+                                   <img src="https://i.imgur.com/ZrfMgqS.png" alt="Discord Icon">
+                                </div>
+                                <span>Discord</span>
+                            </a>
+                        </li>
+                        <li class="social-item">
+                            <a href="#" class="social-link whatsapp-link">
+                                <div class="social-icon">
+                                    <img src="https://i.imgur.com/UyZCOHN.png" alt="Whatsapp Icon">
+                                </div>
+                                <span>Whatsapp</span>
+                            </a>
+                        </li>
+                        <li class="social-item">
+                            <a href="#" class="social-link twitter-link">
+                                <div class="social-icon">
+                                    <img src="https://i.imgur.com/tjkYWQJ.png" alt="X Icon">
+                                </div>
+                                <span>Twitter</span>
+                            </a>
+                        </li>
+                        <li class="social-item">
+                            <a href="#" class="social-link email-link">
+                                <div class="social-icon">
+                                    <img src="https://i.imgur.com/cCGxDVQ.png" alt="Email Icon">
+                                </div>
+                                <span>Email</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">© 2025 Marado.editor - Todos os direitos reservados</p>
+        </div>
+    </footer>
+
+    <script src="background_animated.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar a animação de fundo
+            // Commenting out the background animation script initialization as 'EditorBackground' is not defined in the provided code.
+            // If you have this script, ensure it's loaded before this or defined elsewhere.
+            /*
+            const editorBackground = new EditorBackground({
+                selector: 'editor-background', // This selector doesn't seem to exist in the HTML.
+                maxParticles: 15,
+                minSize: 15,
+                maxSize: 30,
+                connectionDistance: 180
+            });
+            */
+            
+            // Animação de scroll para as seções
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            // Observar todas as seções exceto a hero
+            document.querySelectorAll('section:not(.hero), .footer').forEach(section => {
+                observer.observe(section);
+            });
+            
+            // Scroll suave para links de âncora
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
